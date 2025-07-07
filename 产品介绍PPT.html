@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Agent | 智能学术研究伙伴</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0014, #1a0033, #2d1b69);
+            color: #e2e8f0;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(147, 51, 234, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(168, 85, 247, 0.2) 0%, transparent 50%);
+            z-index: 1;
+        }
+        
+        /* 粒子背景 */
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        
+        /* 幻灯片容器 */
+        .slides-container {
+            display: flex;
+            height: 100vh;
+            width: max-content;
+            transition: transform 0.6s ease-in-out;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* 单页幻灯片 */
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 内容容器 */
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            z-index: 20;
+        }
+        
+        /* 页眉样式 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.3);
+            position: relative;
+        }
+        
+        .header::after {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(232, 121, 249, 0.8), transparent);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #a855f7, #e879f9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.5));
+        }
+        
+        .logo i {
+            font-size: 2rem;
+        }
+        
+        .slide-number {
+            font-size: 1rem;
+            color: #94a3b8;
+        }
+        
+        /* 主标题样式 */
+        .main-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #9333ea, #c084fc, #e879f9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+            text-shadow: 0 0 30px rgba(147, 51, 234, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { filter: brightness(1); }
+            to { filter: brightness(1.2); }
+        }
+        
+        /* 副标题样式 */
+        .subtitle {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: #cbd5e1;
+            max-width: 800px;
+        }
+        
+        /* 内容样式 */
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        /* 卡片样式 - 挑战页专用2x2布局 */
+        .challenge-cards {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(300px, 1fr));
+            grid-template-rows: repeat(2, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        /* 卡片样式 - 通用 */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .card {
+            background: linear-gradient(135deg, rgba(30, 20, 60, 0.8), rgba(50, 30, 80, 0.6));
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: "";
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #a855f7, #e879f9, #a855f7);
+            border-radius: 16px;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: rgba(168, 85, 247, 0.6);
+            box-shadow: 
+                0 20px 40px rgba(147, 51, 234, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .card:hover::before {
+            opacity: 0.7;
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #c084fc, #f0abfc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            filter: drop-shadow(0 0 8px rgba(192, 132, 252, 0.6));
+        }
+        
+        .card-content {
+            color: #cbd5e1;
+            line-height: 1.6;
+            flex: 1;
+        }
+        
+        /* 列表样式 */
+        .feature-list {
+            list-style: none;
+            margin-top: 1.5rem;
+        }
+        
+        .feature-list li {
+            padding: 0.75rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        
+        .feature-list li i {
+            color: #c084fc;
+            margin-top: 0.25rem;
+            filter: drop-shadow(0 0 5px rgba(192, 132, 252, 0.7));
+        }
+        
+        /* 图表容器 */
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+        
+        .chart {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(150px, 1fr));
+            gap: 1.5rem;
+            max-width: 1000px;
+            width: 100%;
+        }
+        
+        .chart-item {
+            background: linear-gradient(135deg, rgba(40, 25, 70, 0.8), rgba(20, 15, 45, 0.9));
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 180px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-item::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%);
+            transition: all 0.5s;
+            opacity: 0;
+        }
+        
+        .chart-item:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(147, 51, 234, 0.4);
+            border-color: rgba(192, 132, 252, 0.6);
+        }
+        
+        .chart-item:hover::after {
+            opacity: 1;
+        }
+        
+        .chart-icon {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #c084fc, #e879f9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.6));
+        }
+        
+        .chart-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #a855f7, #e879f9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0.5rem 0;
+        }
+        
+        .chart-label {
+            color: #94a3b8;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+        
+        /* 按钮样式 */
+        .cta-button {
+            background: linear-gradient(135deg, #9333ea, #c084fc);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 5px 15px rgba(147, 51, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-button::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(147, 51, 234, 0.6);
+        }
+        
+        .cta-button:hover::before {
+            left: 100%;
+        }
+        
+        /* 页脚样式 */
+        .footer {
+            margin-top: auto;
+            padding-top: 2rem;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        /* 导航按钮 */
+        .nav-buttons {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+        
+        .nav-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(30, 20, 60, 0.8);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            color: #c084fc;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3);
+        }
+        
+        .nav-btn:hover {
+            background: rgba(147, 51, 234, 0.3);
+            transform: scale(1.15) rotate(5deg);
+            border-color: rgba(192, 132, 252, 0.8);
+            box-shadow: 0 6px 20px rgba(147, 51, 234, 0.5);
+        }
+        
+        /* 进度条 */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: rgba(30, 41, 59, 0.5);
+            z-index: 100;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #9333ea, #c084fc, #e879f9);
+            transition: width 0.4s ease;
+            box-shadow: 0 0 10px rgba(147, 51, 234, 0.8);
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 1200px) {
+            .cards-container {
+                grid-template-columns: repeat(2, minmax(300px, 1fr));
+            }
+        }
+        
+        @media (max-width: 1024px) {
+            .challenge-cards,
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .main-title {
+                font-size: 3rem;
+            }
+            
+            .subtitle {
+                font-size: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 2rem;
+            }
+            
+            .main-title {
+                font-size: 2.5rem;
+            }
+            
+            .subtitle {
+                font-size: 1.25rem;
+            }
+            
+            .chart {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-title {
+                font-size: 1.3rem;
+            }
+        }
+        
+        /* 对比表格样式 */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .comparison-table th, .comparison-table td {
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        
+        .comparison-table th {
+            background: linear-gradient(135deg, rgba(40, 25, 70, 0.9), rgba(30, 20, 60, 0.8));
+            color: #e879f9;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(232, 121, 249, 0.5);
+        }
+        
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .traditional {
+            color: #f87171;
+        }
+        
+        .academic-agent {
+            color: #e879f9;
+            font-weight: 600;
+            text-shadow: 0 0 8px rgba(232, 121, 249, 0.6);
+        }
+        
+        /* 架构图容器 */
+        .architecture-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .architecture-diagram {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1.5rem;
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        .architecture-layer {
+            background: linear-gradient(135deg, rgba(30, 20, 60, 0.9), rgba(40, 25, 70, 0.7));
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 12px;
+            padding: 1.5rem;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .architecture-layer:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(147, 51, 234, 0.3);
+            border-color: rgba(192, 132, 252, 0.6);
+        }
+        
+        .layer-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #c084fc, #f0abfc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            filter: drop-shadow(0 0 8px rgba(192, 132, 252, 0.5));
+        }
+        
+        .layer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        
+        .layer-item {
+            background: linear-gradient(135deg, rgba(20, 15, 40, 0.8), rgba(30, 20, 50, 0.6));
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 8px;
+            padding: 0.75rem;
+            text-align: center;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .layer-item:hover {
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.3), rgba(168, 85, 247, 0.2));
+            border-color: rgba(192, 132, 252, 0.6);
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+        }
+        
+        /* 架构图标题 */
+        .architecture-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #c084fc, #e879f9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 12px rgba(192, 132, 252, 0.6));
+        }
+        
+        /* 核心功能标题样式 */
+        .core-features-title {
+            text-align: center;
+            font-size: 1.8rem;
+            background: linear-gradient(to right, #c084fc, #e879f9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 2rem 0;
+            position: relative;
+            padding-bottom: 1rem;
+            filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.5));
+        }
+        
+        .core-features-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(to right, #9333ea, #e879f9);
+            border-radius: 3px;
+            box-shadow: 0 0 10px rgba(147, 51, 234, 0.8);
+        }
+        
+        /* 基建层和外部服务并排容器 */
+        .infrastructure-external-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            width: 100%;
+        }
+        
+        /* 响应式调整 - 小屏幕时改为上下布局 */
+        @media (max-width: 768px) {
+            .infrastructure-external-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 粒子背景 -->
+    <div id="particles-js"></div>
+    
+    <!-- 进度条 -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progress"></div>
+    </div>
+    
+    <!-- 幻灯片容器 -->
+    <div class="slides-container" id="slidesContainer">
+        <!-- 封面页 -->
+        <section class="slide">
+            <div class="content">
+                <div class="slide-content" style="justify-content: center; align-items: center; text-align: center;">
+                    <div class="logo" style="margin-bottom: 2rem; font-size: 2rem;">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Academic Agent</span>
+                    </div>
+                    <h1 class="main-title">您的智能学术研究伙伴</h1>
+                    <p class="subtitle">开启学术研究的智能时代</p>
+                    <p style="font-size: 1.2rem; margin-top: 1rem; color: #94a3b8;">2025产品发布会</p>
+                </div>
+                <div class="footer">
+                    <p>© 2025 Academic Agent. All rights reserved.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 挑战页 - 使用2x2布局 -->
+        <section class="slide">
+            <div class="content">
+                <div class="header">
+                    <div class="logo">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Academic Agent</span>
+                    </div>
+                    <div class="slide-number">2/8</div>
+                </div>
+                <div class="slide-content">
+                    <h1 class="main-title">学术研究的挑战</h1>
+                    <p class="subtitle">研究者面临的核心痛点与效率瓶颈</p>
+                    
+                    <div class="challenge-cards">
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-flood"></i> 信息过载</h3>
+                            <p class="card-content">海量文献中难以定位关键信息，研究者平均花费大量时间在文献检索上</p>
+                        </div>
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-search"></i> 检索低效</h3>
+                            <p class="card-content">传统关键词搜索查准率极低，大量无关结果浪费时间</p>
+                        </div>
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-layer-group"></i> 知识碎片</h3>
+                            <p class="card-content">缺乏有效工具整合多源信息，难以形成系统性认知</p>
+                        </div>
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-user-cog"></i> 缺乏个性化</h3>
+                            <p class="card-content">通用工具无法适应不同研究阶段和领域的个性化需求</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <p>"我们需要的不仅仅是一个搜索工具，而是一个真正理解学术研究的智能助手。"</p>
+                </div>
+            </div>
+        </section>
+        
+
+        
+        <!-- 解决方案页 -->
+        <section class="slide">
+            <div class="content">
+                <div class="header">
+                    <div class="logo">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Academic Agent</span>
+                    </div>
+                    <div class="slide-number">4/8</div>
+                </div>
+                <div class="slide-content">
+                    <h1 class="main-title">隆重推出 Academic Agent</h1>
+                    <p class="subtitle">真正懂学术的AI研究助手平台</p>
+                    
+                    <div class="card" style="max-width: 800px; margin: 0 auto;">
+                        <p class="card-content" style="font-size: 1.25rem; line-height: 1.7; text-align: center;">
+                            Academic Agent 为研究者提供从文献检索、文档管理到智能问答的全方位支持，
+                            让每一位研究者都能享受智能化、个性化的学术研究体验，加速科研创新进程
+                        </p>
+                    </div>
+                    
+                    <h2 class="core-features-title">核心能力</h2>
+                    
+                    <div class="chart-container">
+                        <div class="chart">
+                            <div class="chart-item">
+                                <div class="chart-icon"><i class="fas fa-comments"></i></div>
+                                <div class="chart-value">智能问答</div>
+                                <div class="chart-label">24小时学术顾问</div>
+                            </div>
+                            <div class="chart-item">
+                                <div class="chart-icon"><i class="fas fa-search"></i></div>
+                                <div class="chart-value">AI搜索</div>
+                                <div class="chart-label">理解研究意图</div>
+                            </div>
+                            <div class="chart-item">
+                                <div class="chart-icon"><i class="fas fa-folder"></i></div>
+                                <div class="chart-value">文档管理</div>
+                                <div class="chart-label">智能知识组织</div>
+                            </div>
+                            <div class="chart-item">
+                                <div class="chart-icon"><i class="fas fa-user"></i></div>
+                                <div class="chart-value">个性化</div>
+                                <div class="chart-label">专属研究助手</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <p>集成GPT-4、Qwen 2.5、DeepSeek V2等顶级AI模型</p>
+                </div>
+            </div>
+        </section>
+        
+
+        <!-- 产品架构页 -->
+        <section class="slide">
+            <div class="content">
+                <div class="header">
+                    <div class="logo">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Academic Agent 产品架构</span>
+                    </div>
+                    <div class="slide-number">3/8</div>
+                </div>
+                <div class="slide-content">
+                    <div class="architecture-container">
+                        <div class="architecture-diagram">
+                            <!-- 接入层 -->
+                            <div class="architecture-layer">
+                                <div class="layer-title"><i class="fas fa-plug"></i> 接入层</div>
+                                <div class="layer-content">
+                                    <div class="layer-item">Web前端</div>
+                                    <div class="layer-item">移动端APP</div>
+                                    <div class="layer-item">RESTful API</div>
+                                    <div class="layer-item">SDK</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 应用层 -->
+                            <div class="architecture-layer">
+                                <div class="layer-title"><i class="fas fa-layer-group"></i> 应用层</div>
+                                <div class="layer-content">
+                                    <div class="layer-item">智能问答应用</div>
+                                    <div class="layer-item">AI搜索应用</div>
+                                    <div class="layer-item">文档管理应用</div>
+                                    <div class="layer-item">个性化服务</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 领域层（合并了领域层和支撑领域层） -->
+                            <div class="architecture-layer">
+                                <div class="layer-title"><i class="fas fa-sitemap"></i> 领域层</div>
+                                <div class="layer-content">
+                                    <div class="layer-item">个性化服务</div>
+                                    <div class="layer-item">推荐服务</div>
+                                    <div class="layer-item">搜索服务</div>
+                                    <div class="layer-item">会话管理服务</div>
+                                    <div class="layer-item">安全审核服务</div>
+                                    <div class="layer-item">意图识别服务</div>
+                                    <div class="layer-item">向量化服务</div>
+                                    <div class="layer-item">用户服务</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 基建层和外部服务并排容器 -->
+                            <div class="infrastructure-external-container">
+                                <!-- 基建层 -->
+                                <div class="architecture-layer">
+                                    <div class="layer-title"><i class="fas fa-server"></i> 基建层</div>
+                                    <div class="layer-content">
+                                        <div class="layer-item">MySQL</div>
+                                        <div class="layer-item">Redis</div>
+                                        <div class="layer-item">Milvus</div>
+                                        <div class="layer-item">MiniO</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 外部服务 -->
+                                <div class="architecture-layer">
+                                    <div class="layer-title"><i class="fas fa-cloud"></i> 外部服务集成</div>
+                                    <div class="layer-content">
+                                        <div class="layer-item">大模型调用</div>
+                                        <div class="layer-item">学术资源库</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <p>模块化设计，高扩展性，支持千万级用户并发访问</p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 智能问答页 -->
+        <section class="slide">
+            <div class="content">
+                <div class="header">
+                    <div class="logo">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Academic Agent</span>
+                    </div>
+                    <div class="slide-number">5/8</div>
+                </div>
+                <div class="slide-content">
+                    <h1 class="main-title">智能问答系统</h1>
+                    <p class="subtitle">您的24小时学术顾问</p>
+                    
+                    <div class="card">
+                        <h3 class="card-title"><i class="fas fa-bolt"></i> 技术亮点</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-cogs"></i> <strong>多模型协同</strong>：集成GPT-4、Qwen 2.5、DeepSeek V2等顶级模型，智能路由选择</li>
+                            <li><i class="fas fa-brain"></i> <strong>深度理解</strong>：支持复杂学术问题的多维度分析</li>
+                            <li><i class="fas fa-stopwatch"></i> <strong>实时响应</strong>：P90响应时间 < 4秒</li>
+                            <li><i class="fas fa-comments"></i> <strong>多轮对话</strong>：支持32K tokens上下文，上下文压缩策略</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="cards-container" style="margin-top: 2rem;">
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-tachometer-alt"></i> 性能表现</h3>
+                            <ul class="feature-list">
+                                <li><i class="fas fa-clock"></i> 响应时间：4秒</li>
+                                <li><i class="fas fa-star"></i> 用户满意度：90%+</li>
+                                <li><i class="fas fa-book"></i> 检索准确率：80%+</li>
+                            </ul>
+                        </div>
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-project-diagram"></i> 工作流程</h3>
+                            <ul class="feature-list">
+                                <li><i class="fas fa-question-circle"></i> 用户提问</li>
+                                <li><i class="fas fa-route"></i> 智能路由分配</li>
+                                <li><i class="fas fa-cube"></i> 多模型协同处理</li>
+                                <li><i class="fas fa-lightbulb"></i> 精准答案生成</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <p>通过多模态RAG技术检索并总结海量文献，提供精准答案</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- AI搜索页 -->
+        <section class="slide">
+            <div class="content">
+                <div class="header">
+                    <div class="logo">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Academic Agent</span>
+                    </div>
+                    <div class="slide-number">6/8</div>
+                </div>
+                <div class="slide-content">
+                    <h1 class="main-title">AI搜索引擎</h1>
+                    <p class="subtitle">真正理解您的研究意图 - 互联网学术资源智能检索</p>
+                    
+                    <div class="card">
+                        <h3 class="card-title"><i class="fas fa-search-plus"></i> 核心技术</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-globe"></i> <strong>互联网资源检索</strong>：搜索全球学术数据库和在线资源</li>
+                            <li><i class="fas fa-language"></i> <strong>语义搜索</strong>：基于大模型的深度语义理解</li>
+                            <li><i class="fas fa-network-wired"></i> <strong>混合检索</strong>：向量检索 + 全文检索 + 元数据过滤</li>
+                            <li><i class="fas fa-sort-amount-up"></i> <strong>智能排序</strong>：个性化结果排序，相关度提升40%</li>
+                            <li><i class="fas fa-bolt"></i> <strong>实时建议</strong>：搜索建议响应 < 2s</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; align-items: center; margin-top: 2rem;">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>指标</th>
+                                    <th>传统搜索</th>
+                                    <th>Academic Agent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>查准率</td>
+                                    <td class="traditional">45%</td>
+                                    <td class="academic-agent">90%</td>
+                                </tr>
+                                <tr>
+                                    <td>个性化</td>
+                                    <td class="traditional">无</td>
+                                    <td class="academic-agent">动态调整</td>
+                                </tr>
+                                <tr>
+                                    <td>去重能力</td>
+                                    <td class="traditional">简单匹配</td>
+                                    <td class="academic-agent">SimHash算法</td>
+                                </tr>
+                                <tr>
+                                    <td>结果融合</td>
+                                    <td class="traditional">单一排序</td>
+                                    <td class="academic-agent">RRF多维度融合</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <h3 style="color: #5eead4; margin: 2rem 0 1rem; font-size: 1.5rem; text-align: center;">智能搜索流程</h3>
+                        <div style="background: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 1.5rem; width: 100%; max-width: 500px;">
+                            <div style="text-align: center; padding: 1rem; color: #5eead4; border-bottom: 1px solid rgba(148, 163, 184, 0.2);">用户查询</div>
+                            <div style="text-align: center; padding: 1rem; color: #5eead4; border-bottom: 1px solid rgba(148, 163, 184, 0.2);">查询理解与扩展</div>
+                            <div style="text-align: center; padding: 1rem; color: #5eead4; border-bottom: 1px solid rgba(148, 163, 184, 0.2);">多路检索</div>
+                            <div style="text-align: center; padding: 1rem; color: #5eead4;">结果融合与个性化排序</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <p>基于Elasticsearch 8.0全文检索和Milvus 2.3向量检索的混合架构</p>
+                    <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 0.5rem;">注：此搜索功能用于互联网学术资源检索；文档管理页面的搜索仅限于已上传文档内搜索</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 应用场景页 -->
+        <section class="slide">
+            <div class="content">
+                <div class="header">
+                    <div class="logo">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Academic Agent</span>
+                    </div>
+                    <div class="slide-number">7/8</div>
+                </div>
+                <div class="slide-content">
+                    <h1 class="main-title">真实应用场景</h1>
+                    <p class="subtitle">改变研究者的工作方式</p>
+                    
+                    <div class="cards-container">
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-file-alt"></i> 文献综述</h3>
+                            <p class="card-content" style="font-style: italic; margin-bottom: 1rem;">"原本需要2周完成的文献综述，现在只需2小时"</p>
+                            <ul class="feature-list">
+                                <li><i class="fas fa-play"></i> 输入研究主题</li>
+                                <li><i class="fas fa-search"></i> AI自动检索文献</li>
+                                <li><i class="fas fa-cogs"></i> 智能分析和分类</li>
+                                <li><i class="fas fa-file-medical"></i> 生成结构化综述</li>
+                            </ul>
+                        </div>
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-question-circle"></i> 复杂问题解答</h3>
+                            <p class="card-content" style="font-style: italic; margin-bottom: 1rem;">"不仅给出理论解释，还提供代码实现和优化建议"</p>
+                            <ul class="feature-list">
+                                <li><i class="fas fa-brain"></i> 问题理解与分类</li>
+                                <li><i class="fas fa-cubes"></i> 多模型协同处理</li>
+                                <li><i class="fas fa-book"></i> 检索增强（20+篇论文）</li>
+                                <li><i class="fas fa-user-graduate"></i> 个性化难度调整</li>
+                            </ul>
+                        </div>
+                        <div class="card">
+                            <h3 class="card-title"><i class="fas fa-chart-line"></i> 成长路径</h3>
+                            <p class="card-content" style="font-style: italic; margin-bottom: 1rem;">"系统记录兴趣转变，推荐内容贴合学习进度"</p>
+                            <ul class="feature-list">
+                                <li><i class="fas fa-map"></i> 个性化学习路径</li>
+                                <li><i class="fas fa-sync-alt"></i> 兴趣演化追踪</li>
+                                <li><i class="fas fa-book-open"></i> 渐进式内容推荐</li>
+                                <li><i class="fas fa-rocket"></i> 快速掌握新领域</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <p>推荐准确率80%+，用户粘性提升2倍，平均阅读时长45分钟</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 结束页 -->
+        <section class="slide">
+            <div class="content">
+                <div class="slide-content" style="justify-content: center; align-items: center; text-align: center;">
+                    <h1 class="main-title">开启您的智能研究之旅</h1>
+                    <p class="subtitle">让每一位研究者都拥有AI助手</p>
+                    
+                    <div style="max-width: 800px; margin: 2rem auto;">
+                        <div style="display: flex; gap: 1.5rem; justify-content: center; margin-top: 2rem;">
+                            <button class="cta-button">
+                                <i class="fas fa-globe"></i> 立即试用
+                            </button>
+                            <button class="cta-button" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);">
+                                <i class="fas fa-calendar-check"></i> 预约演示
+                            </button>
+                        </div>
+                        
+                        <div style="margin-top: 3rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+                            <div>
+                                <i class="fas fa-globe" style="font-size: 2rem; color: #5eead4; margin-bottom: 1rem;"></i>
+                                <div>www.academic-agent.ai</div>
+                            </div>
+                            <div>
+                                <i class="fas fa-envelope" style="font-size: 2rem; color: #5eead4; margin-bottom: 1rem;"></i>
+                                <div>contact@academic-agent.ai</div>
+                            </div>
+                            <div>
+                                <i class="fas fa-phone" style="font-size: 2rem; color: #5eead4; margin-bottom: 1rem;"></i>
+                                <div>400-888-9999</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="footer" style="margin-top: 3rem; width: 100%;">
+                        <p style="font-size: 1.5rem; margin-bottom: 1.5rem; color: #5eead4;">我们的使命：用AI加速人类知识的创造与传播</p>
+                        <p style="font-size: 1.2rem; color: #94a3b8;">成为全球研究者最信赖的智能研究伙伴</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- 导航按钮 -->
+    <div class="nav-buttons">
+        <div class="nav-btn" id="prevBtn">
+            <i class="fas fa-arrow-left"></i>
+        </div>
+        <div class="nav-btn" id="nextBtn">
+            <i class="fas fa-arrow-right"></i>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // 粒子背景配置
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: "#c084fc" },
+                shape: { type: "circle" },
+                opacity: { value: 0.4, random: true },
+                size: { value: 3, random: true },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: "#c084fc",
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 1,
+                    direction: "none",
+                    random: true,
+                    straight: false,
+                    out_mode: "out",
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: { enable: true, mode: "grab" },
+                    onclick: { enable: true, mode: "push" },
+                    resize: true
+                },
+                modes: {
+                    grab: { distance: 140, line_linked: { opacity: 0.3 } },
+                    push: { particles_nb: 4 }
+                }
+            },
+            retina_detect: true
+        });
+        
+        // 幻灯片逻辑
+        const slidesContainer = document.getElementById('slidesContainer');
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressBar = document.getElementById('progress');
+        
+        let currentSlide = 0;
+        const totalSlides = slides.length;
+        
+        function updateSlide() {
+            slidesContainer.style.transform = `translateX(-${currentSlide * 100}vw)`;
+            
+            // 更新进度条
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            // 更新所有幻灯片编号
+            document.querySelectorAll('.slide-number').forEach((el, index) => {
+                el.textContent = `${index + 1}/${totalSlides}`;
+            });
+        }
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        });
+        
+        // 键盘导航
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                if (currentSlide < totalSlides - 1) {
+                    currentSlide++;
+                    updateSlide();
+                }
+            } else if (e.key === 'ArrowLeft') {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    updateSlide();
+                }
+            }
+        });
+        
+        // 初始化
+        updateSlide();
+    </script>
+</body>
+</html>
